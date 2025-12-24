@@ -17,6 +17,13 @@ export default function LoginPage() {
     
     // Simulate login - in production, this would call an API
     setTimeout(() => {
+      // Save user email to localStorage
+      if (email) {
+        localStorage.setItem('omnichat-user-email', email)
+        // Extract name from email (part before @)
+        const name = email.split('@')[0]
+        localStorage.setItem('omnichat-user-name', name.charAt(0).toUpperCase() + name.slice(1))
+      }
       setIsLoading(false)
       router.push('/chat')
     }, 500)
@@ -24,12 +31,18 @@ export default function LoginPage() {
 
   const handleGoogleSignIn = () => {
     // Handle Google sign in
-    console.log('Google sign in')
+    // For demo purposes, save a default email
+    localStorage.setItem('omnichat-user-email', 'user@gmail.com')
+    localStorage.setItem('omnichat-user-name', 'User')
+    router.push('/chat')
   }
 
   const handleLinkedInSignIn = () => {
     // Handle LinkedIn sign in
-    console.log('LinkedIn sign in')
+    // For demo purposes, save a default email
+    localStorage.setItem('omnichat-user-email', 'user@linkedin.com')
+    localStorage.setItem('omnichat-user-name', 'User')
+    router.push('/chat')
   }
 
   return (
