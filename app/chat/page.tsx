@@ -77,7 +77,10 @@ export default function ChatPage() {
   const [userName, setUserName] = useState<string>('User')
   const [userEmail, setUserEmail] = useState<string>('user@example.com')
   const [activeTab, setActiveTab] = useState<'chats' | 'contacts' | 'groups'>('chats')
-  const [showOverlay, setShowOverlay] = useState<'chats' | 'contacts' | 'groups' | null>(null)
+  const [showOverlay, setShowOverlay] = useState<'contacts' | 'groups' | null>(null)
+  const [showChatList, setShowChatList] = useState(false)
+  const [chatFilter, setChatFilter] = useState<'all' | 'unread' | 'groups' | 'archived'>('all')
+  const [searchQuery, setSearchQuery] = useState('')
   const [showCreateGroup, setShowCreateGroup] = useState(false)
   const [newGroupName, setNewGroupName] = useState('')
   const [selectedContactsForGroup, setSelectedContactsForGroup] = useState<string[]>([])
@@ -1167,6 +1170,7 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
     if (selectedChat) {
       setCurrentChatId(chatId)
       setMessages(selectedChat.messages)
+      setShowChatList(false) // Hide chat list when a chat is selected
       // Mark as read
       setChats(prev => prev.map(chat => 
         chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
@@ -1389,28 +1393,17 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
           </div>
         </div>
 
-        {/* Vertical Navigation Buttons */}
+        {/* Chats Button */}
         <div className="p-4 border-b border-primary-700">
-          <div className="space-y-2">
-            <button
-              onClick={() => setShowOverlay('chats')}
-              className="w-full px-4 py-2 text-sm font-medium bg-primary-500 hover:bg-primary-400 text-white rounded-lg transition text-left"
-            >
-              Chats
-            </button>
-            <button
-              onClick={() => setShowOverlay('contacts')}
-              className="w-full px-4 py-2 text-sm font-medium bg-primary-500 hover:bg-primary-400 text-white rounded-lg transition text-left"
-            >
-              Contacts
-            </button>
-            <button
-              onClick={() => setShowOverlay('groups')}
-              className="w-full px-4 py-2 text-sm font-medium bg-primary-500 hover:bg-primary-400 text-white rounded-lg transition text-left"
-            >
-              Groups
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              setShowChatList(true)
+              setShowOverlay(null)
+            }}
+            className="w-full px-4 py-2 text-sm font-medium bg-primary-500 hover:bg-primary-400 text-white rounded-lg transition text-left"
+          >
+            Chats
+          </button>
         </div>
         
         <div className="flex-1"></div>
@@ -1430,55 +1423,250 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="border-b border-gray-200 bg-white p-4">
-          {currentChatId ? (() => {
-            const currentChat = chats.find(c => c.id === currentChatId)
-            const contact = currentChat?.type === 'contact' ? contacts.find(c => c.id === currentChat.contactId) : null
-            const group = currentChat?.type === 'group' ? groups.find(g => g.id === currentChat.groupId) : null
-            
-            return (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0">
-                  {currentChat?.type === 'group' ? (
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        {/* Chat List View */}
+        {showChatList && !currentChatId ? (
+          <div className="flex-1 flex flex-col bg-white">
+            {/* Header */}
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-2xl font-bold text-gray-900">Chats</h1>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center cursor-pointer">
+                    <span className="text-white font-semibold">{userName.charAt(0).toUpperCase()}</span>
+                  </div>
+                  <button className="p-2 hover:bg-gray-100 rounded-lg">
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                     </svg>
-                  ) : currentChat?.type === 'contact' ? (
-                    <span className="text-white font-semibold">
-                      {contact?.name.charAt(0).toUpperCase() || 'C'}
-                    </span>
-                  ) : (
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                  )}
-                </div>
-                <div>
-                  <h1 className="text-lg font-semibold text-gray-900">{currentChat?.title || 'Chat'}</h1>
-                  {currentChat?.type === 'contact' && contact && (
-                    <p className="text-sm text-gray-500">{contact.email}</p>
-                  )}
-                  {currentChat?.type === 'group' && group && (
-                    <p className="text-sm text-gray-500">{group.members.length} members</p>
-                  )}
-                  {currentChat?.type === 'bot' && (
-                    <p className="text-sm text-gray-500">AI Assistant</p>
-                  )}
+                  </button>
                 </div>
               </div>
-            )
-          })() : (
-            <>
-              <h1 className="text-2xl font-bold text-primary-600">OmniChat</h1>
-              <p className="text-sm text-gray-500">Select a chat to start messaging</p>
-            </>
-          )}
-        </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto bg-white">
-          {messages.length === 0 || (messages.length === 1 && messages[0].role === 'assistant' && !currentChatId) ? (
+              {/* Search Bar */}
+              <div className="relative">
+                <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search or start new chat"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none"
+                />
+              </div>
+
+              {/* Filters */}
+              <div className="flex gap-2 mt-4">
+                <button
+                  onClick={() => setChatFilter('all')}
+                  className={`px-4 py-1.5 text-sm font-medium rounded-lg transition ${
+                    chatFilter === 'all'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => setChatFilter('unread')}
+                  className={`px-4 py-1.5 text-sm font-medium rounded-lg transition ${
+                    chatFilter === 'unread'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Unread ({chats.filter(c => (c.unreadCount && c.unreadCount > 0)).length})
+                </button>
+                <button
+                  onClick={() => setChatFilter('groups')}
+                  className={`px-4 py-1.5 text-sm font-medium rounded-lg transition ${
+                    chatFilter === 'groups'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Groups
+                </button>
+                <button
+                  onClick={() => setChatFilter('archived')}
+                  className={`px-4 py-1.5 text-sm font-medium rounded-lg transition ${
+                    chatFilter === 'archived'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Archived
+                </button>
+              </div>
+            </div>
+
+            {/* Chat List */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-4 space-y-1">
+                {(() => {
+                  let filteredChats = chats.filter(chat => {
+                    // Filter by type
+                    if (chatFilter === 'groups') {
+                      return chat.type === 'group'
+                    }
+                    if (chatFilter === 'unread') {
+                      return chat.unreadCount && chat.unreadCount > 0
+                    }
+                    if (chatFilter === 'archived') {
+                      return false // You can add archived property later
+                    }
+                    return chat.type === 'contact' || chat.type === 'group'
+                  })
+
+                  // Filter by search query
+                  if (searchQuery.trim()) {
+                    filteredChats = filteredChats.filter(chat => 
+                      chat.title.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                  }
+
+                  return filteredChats.map((chat) => {
+                    const contact = chat.type === 'contact' ? contacts.find(c => c.id === chat.contactId) : null
+                    const group = chat.type === 'group' ? groups.find(g => g.id === chat.groupId) : null
+                    const lastMessage = chat.messages[chat.messages.length - 1]
+                    
+                    return (
+                      <div
+                        key={chat.id}
+                        onClick={() => handleSelectChat(chat.id)}
+                        className={`group relative flex items-center gap-3 px-3 py-3 rounded-lg cursor-pointer transition ${
+                          currentChatId === chat.id
+                            ? 'bg-primary-50 border border-primary-200'
+                            : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="w-12 h-12 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0">
+                          {chat.type === 'group' ? (
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                          ) : (
+                            <span className="text-base font-semibold text-white">
+                              {contact?.name.charAt(0).toUpperCase() || 'C'}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="text-sm font-semibold text-gray-900 truncate">{chat.title}</div>
+                            {lastMessage && (
+                              <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
+                                {formatDate(chat.updatedAt)}
+                              </span>
+                            )}
+                          </div>
+                          {lastMessage && (
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm text-gray-600 truncate flex-1">
+                                {lastMessage.senderName && chat.type === 'group' ? `${lastMessage.senderName}: ` : ''}
+                                {lastMessage.content.substring(0, 50)}
+                                {lastMessage.content.length > 50 ? '...' : ''}
+                              </p>
+                              {chat.unreadCount && chat.unreadCount > 0 && (
+                                <span className="bg-primary-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center ml-2 flex-shrink-0">
+                                  {chat.unreadCount}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })
+                })()}
+                {chats.filter(chat => chat.type === 'contact' || chat.type === 'group').length === 0 && (
+                  <div className="text-center text-gray-500 py-12">
+                    <p className="mb-2">No conversations yet</p>
+                    <p className="text-sm">Start chatting with contacts or groups!</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* New Chat Button */}
+            <div className="p-4 border-t border-gray-200">
+              <button
+                onClick={handleNewChat}
+                className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                New Chat
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Header */}
+            <div className="border-b border-gray-200 bg-white p-4">
+              {currentChatId ? (() => {
+                const currentChat = chats.find(c => c.id === currentChatId)
+                const contact = currentChat?.type === 'contact' ? contacts.find(c => c.id === currentChat.contactId) : null
+                const group = currentChat?.type === 'group' ? groups.find(g => g.id === currentChat.groupId) : null
+                
+                return (
+                  <div className="flex items-center gap-3">
+                    {showChatList && (
+                      <button
+                        onClick={() => {
+                          setShowChatList(true)
+                          setCurrentChatId(null)
+                          setMessages([getInitialMessage()])
+                        }}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition"
+                      >
+                        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                    )}
+                    <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0">
+                      {currentChat?.type === 'group' ? (
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      ) : currentChat?.type === 'contact' ? (
+                        <span className="text-white font-semibold">
+                          {contact?.name.charAt(0).toUpperCase() || 'C'}
+                        </span>
+                      ) : (
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                      )}
+                    </div>
+                    <div>
+                      <h1 className="text-lg font-semibold text-gray-900">{currentChat?.title || 'Chat'}</h1>
+                      {currentChat?.type === 'contact' && contact && (
+                        <p className="text-sm text-gray-500">{contact.email}</p>
+                      )}
+                      {currentChat?.type === 'group' && group && (
+                        <p className="text-sm text-gray-500">{group.members.length} members</p>
+                      )}
+                      {currentChat?.type === 'bot' && (
+                        <p className="text-sm text-gray-500">AI Assistant</p>
+                      )}
+                    </div>
+                  </div>
+                )
+              })() : (
+                <>
+                  <h1 className="text-2xl font-bold text-primary-600">OmniChat</h1>
+                  <p className="text-sm text-gray-500">Select a chat to start messaging</p>
+                </>
+              )}
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto bg-white">
+            {messages.length === 0 || (messages.length === 1 && messages[0].role === 'assistant' && !currentChatId) ? (
             <div className="flex flex-col items-center justify-center h-full px-4 py-8">
               {/* Robot Icon */}
               <div className="w-20 h-20 rounded-full bg-white border-2 border-primary-600 flex items-center justify-center mb-6">
@@ -1952,12 +2140,12 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
             </div>
           )}
           
-          <div ref={messagesEndRef} />
-        </div>
+              <div ref={messagesEndRef} />
+            </div>
 
-        {/* Input Area */}
-        <div className="border-t border-gray-200 bg-white p-4">
-          <form onSubmit={handleSend} className="max-w-4xl mx-auto">
+            {/* Input Area */}
+            <div className="border-t border-gray-200 bg-white p-4">
+              <form onSubmit={handleSend} className="max-w-4xl mx-auto">
             {/* Attachment Preview */}
             {attachments.length > 0 && (
               <div className="mb-3 flex flex-wrap gap-2">
@@ -2044,101 +2232,11 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
                 Download Invoice PDF
               </button>
             </div>
-          </form>
-        </div>
+              </form>
+            </div>
+          </>
+        )}
       </div>
-
-      {/* Chats Overlay */}
-      {showOverlay === 'chats' && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-md mx-4 h-[80vh] flex flex-col">
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">Chats</h2>
-              <button
-                onClick={() => setShowOverlay(null)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4">
-              <div className="space-y-1">
-                {chats.filter(chat => chat.type === 'contact' || chat.type === 'group').map((chat) => {
-                  const contact = chat.type === 'contact' ? contacts.find(c => c.id === chat.contactId) : null
-                  const group = chat.type === 'group' ? groups.find(g => g.id === chat.groupId) : null
-                  const lastMessage = chat.messages[chat.messages.length - 1]
-                  
-                  return (
-                    <div
-                      key={chat.id}
-                      onClick={() => {
-                        handleSelectChat(chat.id)
-                        setShowOverlay(null)
-                      }}
-                      className={`group relative flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition ${
-                        currentChatId === chat.id
-                          ? 'bg-primary-100'
-                          : 'hover:bg-gray-100'
-                      }`}
-                    >
-                      <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0">
-                        {chat.type === 'group' ? (
-                          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                          </svg>
-                        ) : (
-                          <span className="text-sm font-semibold text-white">
-                            {contact?.name.charAt(0).toUpperCase() || 'C'}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <div className="text-sm font-medium truncate text-gray-900">{chat.title}</div>
-                          {chat.unreadCount && chat.unreadCount > 0 && (
-                            <span className="bg-primary-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center ml-2 flex-shrink-0">
-                              {chat.unreadCount}
-                            </span>
-                          )}
-                        </div>
-                        {lastMessage && (
-                          <div className="text-xs text-gray-500 truncate mt-0.5">
-                            {lastMessage.senderName && chat.type === 'group' ? `${lastMessage.senderName}: ` : ''}
-                            {lastMessage.content.substring(0, 30)}
-                            {lastMessage.content.length > 30 ? '...' : ''}
-                          </div>
-                        )}
-                        <div className="text-xs text-gray-400 mt-0.5">
-                          {formatDate(chat.updatedAt)}
-                        </div>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDeleteChat(chat.id, e)
-                        }}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-200 rounded"
-                        title="Delete chat"
-                      >
-                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
-                  )
-                })}
-                {chats.filter(chat => chat.type === 'contact' || chat.type === 'group').length === 0 && (
-                  <div className="text-center text-gray-500 text-sm py-8">
-                    No conversations yet. Start chatting with contacts or groups!
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Contacts Overlay */}
       {showOverlay === 'contacts' && (
