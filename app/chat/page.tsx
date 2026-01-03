@@ -81,6 +81,7 @@ export default function ChatPage() {
   const [showChatList, setShowChatList] = useState(false)
   const [chatFilter, setChatFilter] = useState<'all' | 'unread' | 'groups' | 'archived'>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [showNewChatModal, setShowNewChatModal] = useState(false)
   const [showCreateGroup, setShowCreateGroup] = useState(false)
   const [newGroupName, setNewGroupName] = useState('')
   const [selectedContactsForGroup, setSelectedContactsForGroup] = useState<string[]>([])
@@ -1163,6 +1164,7 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
   const handleNewChat = () => {
     setCurrentChatId(null)
     setMessages([getInitialMessage()])
+    setShowChatList(false) // Show the welcome screen instead of chat list
   }
 
   const handleSelectChat = (chatId: string) => {
@@ -1592,7 +1594,7 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
             {/* New Chat Button */}
             <div className="p-4 border-t border-gray-200">
               <button
-                onClick={handleNewChat}
+                onClick={() => setShowNewChatModal(true)}
                 className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded-lg transition flex items-center justify-center gap-2"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2412,6 +2414,143 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
               >
                 Create Group
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* New Chat Modal - Contacts and Groups */}
+      {showNewChatModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-2xl mx-4 h-[80vh] flex flex-col">
+            <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-900">New Chat</h2>
+              <button
+                onClick={() => setShowNewChatModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              {/* Tabs */}
+              <div className="flex gap-2 mb-4 border-b border-gray-200">
+                <button
+                  onClick={() => setActiveTab('contacts')}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+                    activeTab === 'contacts'
+                      ? 'border-primary-600 text-primary-600'
+                      : 'border-transparent text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Contacts ({contacts.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab('groups')}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+                    activeTab === 'groups'
+                      ? 'border-primary-600 text-primary-600'
+                      : 'border-transparent text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Groups ({groups.length})
+                </button>
+                <button
+                  onClick={() => {
+                    setShowNewChatModal(false)
+                    handleNewChat()
+                  }}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+                    activeTab === 'chats'
+                      ? 'border-primary-600 text-primary-600'
+                      : 'border-transparent text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Chat Bot
+                </button>
+              </div>
+
+              {/* Contacts Tab */}
+              {activeTab === 'contacts' && (
+                <div className="space-y-2">
+                  {contacts.length === 0 ? (
+                    <div className="text-center text-gray-500 py-12">
+                      <p>No contacts available</p>
+                    </div>
+                  ) : (
+                    contacts.map((contact) => (
+                      <div
+                        key={contact.id}
+                        onClick={() => {
+                          handleContactClick(contact.id)
+                          setShowNewChatModal(false)
+                        }}
+                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-semibold">
+                            {contact.name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900">{contact.name}</div>
+                          <div className="text-sm text-gray-500">{contact.email}</div>
+                        </div>
+                        {contact.isOnline && (
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* Groups Tab */}
+              {activeTab === 'groups' && (
+                <div className="space-y-2">
+                  <button
+                    onClick={() => {
+                      setShowNewChatModal(false)
+                      setShowCreateGroup(true)
+                    }}
+                    className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition flex items-center justify-center gap-2 text-primary-600 font-medium"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Create New Group
+                  </button>
+                  {groups.length === 0 ? (
+                    <div className="text-center text-gray-500 py-12">
+                      <p>No groups available</p>
+                    </div>
+                  ) : (
+                    groups.map((group) => (
+                      <div
+                        key={group.id}
+                        onClick={() => {
+                          handleGroupClick(group.id)
+                          setShowNewChatModal(false)
+                        }}
+                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0">
+                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900">{group.name}</div>
+                          <div className="text-sm text-gray-500">{group.members.length} members</div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
