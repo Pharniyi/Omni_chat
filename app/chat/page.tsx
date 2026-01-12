@@ -387,7 +387,6 @@ export default function ChatPage() {
 
     const currentChat = chats.find(c => c.id === currentChatId)
     const userInput = input.trim()
-
     const userMessage: Message = {
       id: Date.now().toString(),
       role: currentChat?.type === 'group' ? 'contact' : 'user',
@@ -402,7 +401,6 @@ export default function ChatPage() {
     setMessages(updatedMessages)
     setInput('')
     setAttachments([]) // Clear attachments after sending
-
     // Create new chat if this is the first user message or no current chat
     let activeChatId = currentChatId
     if (!currentChatId || (messages.length === 1 && messages[0].role === 'assistant')) {
@@ -504,7 +502,6 @@ export default function ChatPage() {
         const group = currentChat.type === 'group'
           ? groups.find(g => g.id === currentChat.groupId)
           : null
-
         const responderName = contact?.name || group?.name || 'Contact'
         const responseMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -517,7 +514,6 @@ export default function ChatPage() {
         const finalMessages = [...updatedMessages, responseMessage]
         setMessages(finalMessages)
         setIsLoading(false)
-
         if (activeChatId) {
           updateChatInList(activeChatId, finalMessages)
         }
@@ -550,7 +546,6 @@ export default function ChatPage() {
 
 Would you like me to help you create a specific onboarding checklist or answer questions about any particular aspect?`
       }
-
       if (lowerInput.includes('performance') || lowerInput.includes('review') || lowerInput.includes('evaluation') || lowerInput.includes('appraisal')) {
         return `Performance reviews are essential for employee development and organizational growth. Here's how to conduct effective reviews:
 
@@ -576,7 +571,6 @@ Would you like me to help you create a specific onboarding checklist or answer q
 
 What specific aspect of performance management would you like to explore?`
       }
-
       if (lowerInput.includes('leave') || lowerInput.includes('vacation') || lowerInput.includes('pto') || lowerInput.includes('time off') || lowerInput.includes('sick')) {
         return `Managing employee leave effectively is important for both compliance and employee satisfaction:
 
@@ -604,7 +598,6 @@ What specific aspect of performance management would you like to explore?`
 
 Would you like help creating a leave policy or setting up a leave management system?`
       }
-
       return `I'd be happy to help with employee management! This is a broad area covering many important aspects:
 
 **Key Areas I Can Assist With:**
@@ -619,7 +612,6 @@ Would you like help creating a leave policy or setting up a leave management sys
 
 What specific employee management challenge or question do you have? I can provide detailed guidance tailored to your needs.`
     }
-
     // Recruitment Responses
     if (lowerInput.includes('recruit') || lowerInput.includes('hiring') || lowerInput.includes('job') || lowerInput.includes('candidate') || lowerInput.includes('interview')) {
       if (lowerInput.includes('job post') || lowerInput.includes('job description') || lowerInput.includes('job ad')) {
@@ -668,7 +660,6 @@ What We Offer:
 
 Would you like me to help you craft a job posting for a specific role?`
       }
-
       if (lowerInput.includes('interview') || lowerInput.includes('screening') || lowerInput.includes('candidate')) {
         return `Effective interviewing is key to finding the right talent. Here's a comprehensive guide:
 
@@ -717,7 +708,6 @@ Would you like me to help you craft a job posting for a specific role?`
 
 Would you like help creating interview questions for a specific role or setting up an interview process?`
       }
-
       if (lowerInput.includes('offer') || lowerInput.includes('salary') || lowerInput.includes('compensation') || lowerInput.includes('negotiate')) {
         return `Creating competitive job offers requires balancing market rates, budget, and candidate expectations:
 
@@ -754,7 +744,6 @@ Would you like help creating interview questions for a specific role or setting 
 
 Would you like help structuring an offer for a specific role or navigating a negotiation?`
       }
-
       return `I can help you with various aspects of recruitment and hiring:
 
 **Key Areas:**
@@ -777,7 +766,6 @@ Would you like help structuring an offer for a specific role or navigating a neg
 
 What specific recruitment challenge or question do you have? I can provide detailed guidance.`
     }
-
     // Accounting Responses
     if (lowerInput.includes('account') || lowerInput.includes('finance') || lowerInput.includes('budget') || lowerInput.includes('bookkeep') || lowerInput.includes('tax') || lowerInput.includes('expense')) {
       if (lowerInput.includes('bookkeep') || lowerInput.includes('record') || lowerInput.includes('journal') || lowerInput.includes('ledger')) {
@@ -820,7 +808,6 @@ What specific recruitment challenge or question do you have? I can provide detai
 
 Would you like help setting up a bookkeeping system or understanding specific accounting concepts?`
       }
-
       if (lowerInput.includes('tax') || lowerInput.includes('irs') || lowerInput.includes('deduction') || lowerInput.includes('filing')) {
         return `Tax management is crucial for compliance and optimization. Here's what you need to know:
 
@@ -866,7 +853,6 @@ Would you like help setting up a bookkeeping system or understanding specific ac
 
 Would you like help with specific tax questions or setting up a tax management system?`
       }
-
       if (lowerInput.includes('financial report') || lowerInput.includes('statement') || lowerInput.includes('balance sheet') || lowerInput.includes('income statement') || lowerInput.includes('cash flow')) {
         return `Financial statements provide crucial insights into your business's financial health:
 
@@ -906,7 +892,6 @@ Would you like help with specific tax questions or setting up a tax management s
 
 Would you like help understanding specific financial statements or calculating key metrics?`
       }
-
       return `I can help you with various accounting and financial management topics:
 
 **Key Areas:**
@@ -930,7 +915,6 @@ Would you like help understanding specific financial statements or calculating k
 
 What specific accounting question or challenge can I help you with?`
     }
-
     // E-Invoicing Responses
     if (lowerInput.includes('invoice') || lowerInput.includes('billing') || lowerInput.includes('payment') || lowerInput.includes('receivable') || lowerInput.includes('bill')) {
       if (lowerInput.includes('create') || lowerInput.includes('make') || lowerInput.includes('generate') || lowerInput.includes('template')) {
@@ -994,7 +978,6 @@ Payment Methods: [List options]
 
 Would you like help creating a specific invoice template or setting up an invoicing system?`
       }
-
       if (lowerInput.includes('overdue') || lowerInput.includes('late') || lowerInput.includes('collection') || lowerInput.includes('unpaid')) {
         return `Managing overdue invoices requires a systematic approach:
 
@@ -1052,7 +1035,6 @@ Thank you!
 
 Would you like help crafting collection emails or setting up an automated reminder system?`
       }
-
       if (lowerInput.includes('electronic') || lowerInput.includes('digital') || lowerInput.includes('online') || lowerInput.includes('automated')) {
         return `E-invoicing (electronic invoicing) offers many advantages over traditional paper invoices:
 
@@ -1102,7 +1084,6 @@ Would you like help crafting collection emails or setting up an automated remind
 
 Would you like help choosing an e-invoicing platform or setting up automated invoicing?`
       }
-
       return `I can help you with various aspects of invoicing and billing:
 
 **Key Areas:**
@@ -1127,7 +1108,6 @@ Would you like help choosing an e-invoicing platform or setting up automated inv
 
 What specific invoicing question or challenge can I help you with?`
     }
-
     // General/Default Response
     if (lowerInput.includes('hello') || lowerInput.includes('hi') || lowerInput.includes('hey')) {
       return `Hello! I'm OmniChat, your AI assistant specialized in business operations. I'm here to help you with:
@@ -1139,7 +1119,6 @@ What specific invoicing question or challenge can I help you with?`
 
 What would you like to know more about? Feel free to ask me any questions, and I'll provide detailed, actionable guidance!`
     }
-
     if (lowerInput.includes('help') || lowerInput.includes('what can you') || lowerInput.includes('what do you')) {
       return `I'm OmniChat, your specialized business assistant! I can help you with:
 
@@ -1173,7 +1152,6 @@ What would you like to know more about? Feel free to ask me any questions, and I
 
 Just ask me a specific question about any of these areas, and I'll provide detailed, helpful guidance! What would you like to know?`
     }
-
     // Default response for unrecognized queries
     return `I understand you're asking about: "${userInput}". 
 
@@ -1248,13 +1226,11 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
           setMessages(finalMessages)
           setStreamingContent('')
           setIsLoading(false)
-
           if (activeChatId) {
             updateChatInList(activeChatId, finalMessages)
           }
         }
       }
-
       setTimeout(typeResponse, 300)
     }, 100)
   }
@@ -1280,7 +1256,6 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
 
   const handleContactClick = (contactId: string) => {
     const existingChat = chats.find(c => c.type === 'contact' && c.contactId === contactId)
-
     if (existingChat) {
       handleSelectChat(existingChat.id)
     } else {
@@ -1303,7 +1278,6 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
 
   const handleGroupClick = (groupId: string) => {
     const existingChat = chats.find(c => c.type === 'group' && c.groupId === groupId)
-
     if (existingChat) {
       handleSelectChat(existingChat.id)
     } else {
@@ -1326,7 +1300,6 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
 
   const handleCreateGroup = () => {
     if (!newGroupName.trim() || selectedContactsForGroup.length === 0) return
-
     const newGroup: Group = {
       id: Date.now().toString(),
       name: newGroupName.trim(),
@@ -1529,7 +1502,6 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
             </div>
           </div>
         </div>
-
         {/* Chat Bot Section with History */}
         <div className="p-4 border-b border-primary-700">
           <div className="flex items-center justify-between mb-3">
@@ -1549,7 +1521,6 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
           <div className="space-y-1 max-h-64 overflow-y-auto">
             {chats.filter(chat => chat.type === 'bot').map((chat) => {
               const lastMessage = chat.messages[chat.messages.length - 1]
-
               return (
                 <div
                   key={chat.id}
@@ -1736,7 +1707,6 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
                     const contact = chat.type === 'contact' ? contacts.find(c => c.id === chat.contactId) : null
                     const group = chat.type === 'group' ? groups.find(g => g.id === chat.groupId) : null
                     const lastMessage = chat.messages[chat.messages.length - 1]
-
                     return (
                       <div
                         key={chat.id}
@@ -1815,7 +1785,6 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
                 const currentChat = chats.find(c => c.id === currentChatId)
                 const contact = currentChat?.type === 'contact' ? contacts.find(c => c.id === currentChat.contactId) : null
                 const group = currentChat?.type === 'group' ? groups.find(g => g.id === currentChat.groupId) : null
-
                 return (
                   <div className="flex items-center gap-3">
                     {showChatList && (
@@ -2671,7 +2640,6 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Create New Group</h2>
-
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Group Name
