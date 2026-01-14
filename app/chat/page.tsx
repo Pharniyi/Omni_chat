@@ -449,19 +449,32 @@ export default function ChatPage() {
           signal: abortController.signal,
         })
 
-        const data = await response.json()
-
         if (!response.ok) {
+          const data = await response.json().catch(() => ({ error: 'Failed to fetch response' }))
           throw new Error(data.details || data.error || 'Failed to fetch response')
         }
 
-        const fullResponse = data.response
+        // Consume the stream
+        const reader = response.body?.getReader()
+        if (!reader) throw new Error('No response body')
 
-        // Display response immediately without slow typing simulation
+        const decoder = new TextDecoder()
+        let accumulatedText = ''
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          const chunk = decoder.decode(value, { stream: true })
+          accumulatedText += chunk
+          setStreamingContent(accumulatedText)
+          scrollToBottom()
+        }
+
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: fullResponse,
+          content: accumulatedText,
           timestamp: new Date(),
         }
         const finalMessages = [...updatedMessages, assistantMessage]
@@ -1443,18 +1456,32 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
         signal: abortController.signal,
       })
 
-      const data = await response.json()
-
       if (!response.ok) {
+        const data = await response.json().catch(() => ({ error: 'Failed to fetch response' }))
         throw new Error(data.details || data.error || 'Failed to fetch response')
       }
 
-      const fullResponse = data.response
+      // Consume the stream
+      const reader = response.body?.getReader()
+      if (!reader) throw new Error('No response body')
+
+      const decoder = new TextDecoder()
+      let accumulatedText = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value, { stream: true })
+        accumulatedText += chunk
+        setStreamingContent(accumulatedText)
+        scrollToBottom()
+      }
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: fullResponse,
+        content: accumulatedText,
         timestamp: new Date(),
       }
       const finalMessages = [...messagesUpToEdit, assistantMessage]
@@ -1488,7 +1515,7 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
   return (
     <div className="flex h-screen bg-white overflow-hidden">
       {/* Sidebar */}
-      <div className="w-64 bg-primary-600 text-white flex flex-col">
+      <div className="w-64 bg-primary-600 text-white flex flex-col flex-shrink-0">
         <div className="p-4 border-b border-primary-700">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0">
@@ -1603,7 +1630,7 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Chat List View */}
         {showChatList && !currentChatId ? (
           <div className="flex-1 flex flex-col bg-white">
@@ -2179,7 +2206,7 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
                   </div>
                 </div>
               ) : (
-                <div className="space-y-2 p-4">
+                <div className="space-y-4 px-4 overflow-x-hidden">
                   {messages.map((message) => {
                     const isUser = message.role === 'user' || message.senderId === 'me'
                     const currentChat = chats.find(c => c.id === currentChatId)
@@ -2204,12 +2231,12 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
                           </div>
                         )}
 
-                        <div className={`flex flex-col max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
+                        <div className={`flex flex-col max-w-[85%] min-w-0 ${isUser ? 'items-end' : 'items-start'}`}>
                           {isGroup && !isUser && message.senderName && (
                             <span className="text-xs text-gray-600 mb-1 px-2">{message.senderName}</span>
                           )}
                           <div
-                            className={`group/message relative rounded-2xl px-3 py-2 ${isUser
+                            className={`group/message relative rounded-2xl px-3 py-2 min-w-0 w-full ${isUser
                               ? 'bg-primary-600 text-white rounded-tr-none'
                               : 'bg-white text-gray-800 rounded-tl-none shadow-sm'
                               }`}
@@ -2255,7 +2282,7 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
                             ) : (
                               <>
                                 {message.content && (
-                                  <div className={`text-sm prose prose-sm max-w-none break-words overflow-hidden ${isUser ? 'prose-invert' : ''}`}>
+                                  <div className={`text-sm prose prose-sm max-w-none break-words overflow-x-auto ${isUser ? 'prose-invert' : ''}`}>
                                     <ReactMarkdown
                                       remarkPlugins={[remarkGfm]}
                                       components={{
@@ -2375,8 +2402,18 @@ I'm here to provide detailed, actionable guidance on any of these topics!`
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
                   </div>
-                  <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3 max-w-[85%] break-words w-fit shadow-sm">
-                    <p className="whitespace-pre-wrap break-words">{streamingContent}<span className="animate-pulse">▊</span></p>
+                  <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3 max-w-[85%] min-w-0 shadow-sm">
+                    <div className="text-sm prose prose-sm max-w-none break-words overflow-x-auto">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          p: ({ node, ...props }) => <p className="mb-2 last:mb-0 whitespace-pre-wrap" {...props} />,
+                        }}
+                      >
+                        {streamingContent}
+                      </ReactMarkdown>
+                      <span className="inline-block w-2 h-4 bg-primary-600 animate-pulse ml-1 align-middle" />
+                    </div>
                   </div>
                 </div>
               )}
